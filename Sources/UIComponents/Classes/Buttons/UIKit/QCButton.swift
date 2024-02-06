@@ -114,6 +114,7 @@ public class QCButton: UIButton {
         leftIconView.contentMode = .scaleAspectFit
         rightIconView.contentMode = .scaleAspectFit
         cornerRadius = config.radius
+        tintColor = config.tintColor
         updateProperties()
     }
 
