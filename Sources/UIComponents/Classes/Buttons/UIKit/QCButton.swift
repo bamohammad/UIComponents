@@ -46,13 +46,13 @@ public class QCButton: UIButton {
     }()
 
     /// @IBInspectable leftIcon properties for storyboard
-    @IBInspectable var leftIcon: UIImage? {
+    @IBInspectable public var leftIcon: UIImage? {
         didSet {
             setLeftIcon(leftIcon, for: .normal)
         }
     }
     /// @IBInspectable rightIcon properties for storyboard
-    @IBInspectable var rightIcon: UIImage? {
+    @IBInspectable public var rightIcon: UIImage? {
         didSet {
             setRightIcon(rightIcon, for: .normal)
         }
