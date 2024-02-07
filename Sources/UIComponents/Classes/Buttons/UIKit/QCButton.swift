@@ -63,7 +63,11 @@ public class QCButton: UIButton {
     }
 
     /// default config is primary you can change properties as you want
-    var config: QCButtonConfig = .primary
+    public var config: QCButtonConfig = .primary {
+        didSet {
+            commonInit()
+        }
+    }
 
     private var leftIcons: [UInt: UIImage] = [:]
     private var rightIcons: [UInt: UIImage] = [:]
