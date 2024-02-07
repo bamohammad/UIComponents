@@ -8,12 +8,12 @@
 import UIKit
 
 public class UIComponentConfig {
-    static let shared = UIComponentConfig()
-    static var background = Background()
-    static var border = Border()
-    static var content = Content()
-    static var font = Font()
-    static var isRTLLanguage = true
+    public static let shared = UIComponentConfig()
+    public static var background = Background()
+    public static var border = Border()
+    public static var content = Content()
+    public static var font = Font()
+    public static var isRTLLanguage = true
     
     public struct Background {
         public var primary: UIColor = .white
