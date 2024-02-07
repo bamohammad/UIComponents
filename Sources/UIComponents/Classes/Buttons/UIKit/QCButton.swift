@@ -10,29 +10,28 @@ public struct QCButtonConfig {
     public var disabledTitleColor: UIColor
     public var font: UIFont
     public var radius: CGFloat
+    public var size: ButtonSize
     public var iconSize: CGFloat
-    public var padding: CGFloat
 }
 
 public extension QCButtonConfig {
     static var primary: Self {
         return .init(
-            background: .black,
-            titleColor: .white,
-            tintColor: .white,
-            disabledBackground: .gray,
-            disabledTitleColor: .white,
-            font: UIFont.systemFont(ofSize: 12, weight: .bold),
+            background: UIComponentConfig.background.primaryCTA,
+            titleColor: UIComponentConfig.content.onColor,
+            tintColor: UIComponentConfig.content.onColor,
+            disabledBackground: UIComponentConfig.background.disable,
+            disabledTitleColor: UIComponentConfig.content.onColor,
+            font: UIComponentConfig.font.bold.withSize(12),
             radius: 8,
-            iconSize: 20,
-            padding:14
+            size: .medium,
+            iconSize: 20
         )
     }
 }
 
 @IBDesignable
 public class QCButton: UIButton {
-   
     private lazy var leftIconView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -46,36 +45,42 @@ public class QCButton: UIButton {
     }()
 
     /// @IBInspectable leftIcon properties for storyboard
+    /// use this if you want to have image in left side
+    /// use default setImage function if you want to have button with only image
     @IBInspectable public var leftIcon: UIImage? {
         didSet {
             setLeftIcon(leftIcon, for: .normal)
         }
     }
+
     /// @IBInspectable rightIcon properties for storyboard
+    /// use this if you want to have image in right side
+    /// use default setImage function if you want to have button with only image
     @IBInspectable public var rightIcon: UIImage? {
         didSet {
             setRightIcon(rightIcon, for: .normal)
         }
     }
 
+    /// default config is primary you can change properties as you want
     var config: QCButtonConfig = .primary
 
     private var leftIcons: [UInt: UIImage] = [:]
     private var rightIcons: [UInt: UIImage] = [:]
 
-    public override var isHighlighted: Bool {
+    override public var isHighlighted: Bool {
         didSet {
             updateProperties()
         }
     }
 
-    public override var isSelected: Bool {
+    override public var isSelected: Bool {
         didSet {
             updateProperties()
         }
     }
 
-    public override var isEnabled: Bool {
+    override public var isEnabled: Bool {
         didSet {
             updateProperties()
         }
@@ -91,52 +96,46 @@ public class QCButton: UIButton {
         super.init(coder: aDecoder)
         commonInit()
     }
-    
-    /// You might keep the override to prevent direct usage, or remove it if not needed
-    public override func setImage(_ image: UIImage?, for state: UIControl.State) {
-        setLeftIcon(image, for: state)
-    }
 
     private func commonInit() {
         addSubview(leftIconView)
         addSubview(rightIconView)
-
         NSLayoutConstraint.activate([leftIconView.heightAnchor.constraint(equalToConstant: config.iconSize),
                                      leftIconView.widthAnchor.constraint(equalToConstant: config.iconSize),
                                      leftIconView.centerYAnchor.constraint(equalTo: centerYAnchor),
-                                     leftIconView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: config.padding),
+                                     leftIconView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: config.size.pading),
 
                                      rightIconView.heightAnchor.constraint(equalToConstant: config.iconSize),
                                      rightIconView.widthAnchor.constraint(equalToConstant: config.iconSize),
                                      rightIconView.centerYAnchor.constraint(equalTo: centerYAnchor),
-                                     rightIconView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -config.padding)])
+                                     rightIconView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -config.size.pading)])
 
         leftIconView.contentMode = .scaleAspectFit
         rightIconView.contentMode = .scaleAspectFit
         cornerRadius = config.radius
         tintColor = config.tintColor
+        // to override  storyboard constraint value
+        heightConstraint?.constant = config.size.rawValue
         updateProperties()
     }
-
 
     private func updateProperties() {
         let rightImage = rightIcons[state.rawValue] ?? rightIcons[UIControl.State.normal.rawValue]
         let leftImage = leftIcons[state.rawValue] ?? leftIcons[UIControl.State.normal.rawValue]
         rightIconView.image = rightImage
         leftIconView.image = leftImage
-        
+
         backgroundColor = isEnabled ? config.background : config.disabledBackground
         setTitleColor(config.titleColor, for: .normal)
         setTitleColor(config.disabledTitleColor, for: .disabled)
 
         titleLabel?.font = config.font
-        
         updateContentEdgeInsets()
     }
 
     public func setLeftIcon(_ image: UIImage?, for state: UIControl.State) {
         leftIcons[state.rawValue] = image
-        // Update the right icon if the current state matches
+        // Update the left icon if the current state matches
         if state == self.state {
             updateLeftIconForCurrentState()
         }
@@ -161,12 +160,58 @@ public class QCButton: UIButton {
         leftIconView.image = image
         updateContentEdgeInsets()
     }
-    
+
     private func updateContentEdgeInsets() {
         // add horizontal space if there is images
-        contentEdgeInsets.left = leftIconView.image != nil ? (config.padding + config.iconSize + 8) : config.padding
-        contentEdgeInsets.right = rightIconView.image != nil ? (config.padding + config.iconSize + 8) : config.padding
+        if UIComponentConfig.isRTLLanguage {
+            contentEdgeInsets.right = leftIconView.image != nil ? (config.size.pading + config.iconSize + config.size.iconMargin) : config.size.pading
+            contentEdgeInsets.left = rightIconView.image != nil ? (config.size.pading + config.iconSize + config.size.iconMargin) : config.size.pading
+        } else {
+            contentEdgeInsets.left = leftIconView.image != nil ? (config.size.pading + config.iconSize + config.size.iconMargin) : config.size.pading
+            contentEdgeInsets.right = rightIconView.image != nil ? (config.size.pading + config.iconSize + config.size.iconMargin) : config.size.pading
+        }
+    }
+}
+
+extension UIView {
+    var heightConstraint: NSLayoutConstraint? {
+        get {
+            return constraints.first(where: {
+                $0.firstAttribute == .height && $0.relation == .equal
+            })
+        }
+        set { setNeedsLayout() }
+    }
+}
+
+public enum ButtonSize: CGFloat {
+    case small = 36
+    case medium = 40
+    case large = 42
+    case xLarge = 46
+    case doubleXLarge = 58
+
+    var pading: CGFloat {
+        switch self {
+        case .small:
+            return 14
+        case .medium:
+            return 16
+        case .large:
+            return 18
+        case .xLarge:
+            return 20
+        case .doubleXLarge:
+            return 28
+        }
     }
 
-    
+    var iconMargin: CGFloat {
+        switch self {
+        case .doubleXLarge:
+            return 12
+        default:
+            return 8
+        }
+    }
 }
