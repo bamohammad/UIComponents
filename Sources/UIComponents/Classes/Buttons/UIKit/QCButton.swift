@@ -17,12 +17,12 @@ public struct QCButtonConfig {
 public extension QCButtonConfig {
     static var primary: Self {
         return .init(
-            background: UIComponentConfig.background.primaryCTA,
-            titleColor: UIComponentConfig.content.onColor,
-            tintColor: UIComponentConfig.content.onColor,
-            disabledBackground: UIComponentConfig.background.disable,
-            disabledTitleColor: UIComponentConfig.content.onColor,
-            font: UIComponentConfig.font.bold.withSize(12),
+            background: UIComponentConfig.currentTheme.background.primaryCTA,
+            titleColor: UIComponentConfig.currentTheme.content.onColor,
+            tintColor: UIComponentConfig.currentTheme.content.onColor,
+            disabledBackground: UIComponentConfig.currentTheme.background.disable,
+            disabledTitleColor: UIComponentConfig.currentTheme.content.onColor,
+            font: UIComponentConfig.currentTheme.font.bold.withSize(12),
             radius: 8,
             size: .medium,
             iconSize: 20
@@ -61,6 +61,18 @@ public class QCButton: UIButton {
             setRightIcon(rightIcon, for: .normal)
         }
     }
+    
+    /// @IBInspectable height properties for storyboard
+    /// use this if you want to override height from button size in config
+    @IBInspectable public var height: CGFloat = 0.0 {
+        didSet {
+            if height > 0 {
+                heightConstraint?.constant = height
+            } else {
+                heightConstraint?.constant = config.size.rawValue
+            }
+        }
+    }
 
     /// default config is primary you can change properties as you want
     public var config: QCButtonConfig = .primary {
@@ -68,6 +80,7 @@ public class QCButton: UIButton {
             commonInit()
         }
     }
+    
 
     private var leftIcons: [UInt: UIImage] = [:]
     private var rightIcons: [UInt: UIImage] = [:]
@@ -119,7 +132,7 @@ public class QCButton: UIButton {
         cornerRadius = config.radius
         tintColor = config.tintColor
         // to override  storyboard constraint value
-        heightConstraint?.constant = config.size.rawValue
+        heightConstraint?.constant = height > 0 ? height : config.size.rawValue
         updateProperties()
     }
 
